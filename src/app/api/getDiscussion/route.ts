@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import axios from "axios";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../authOptions/route";
+import { authOptions } from "../getServerSession/authOptions";
 // NextAuthの設定ファイルのパスに合わせて変更
 
 const GITHUB_GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
