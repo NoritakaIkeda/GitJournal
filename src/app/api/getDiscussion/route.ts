@@ -1,18 +1,32 @@
 import { type NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // NextAuthの設定ファイルのパスに合わせて変更
 
 const GITHUB_GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
 
 export async function GET(req: NextRequest) {
-  const owner = process.env.GITHUB_OWNER;
-  const repo = process.env.GITHUB_REPO_NAME;
-  const token = process.env.GITHUB_TOKEN;
-  const number = Number(req.nextUrl.searchParams.get("number") || "2"); // デフォルト1など
+  const number = Number(req.nextUrl.searchParams.get("number") || "2"); // デフォルト値
 
-  if (!owner || !repo || !token) {
+  const session = await getServerSession(authOptions); // セッションを取得
+
+  if (!session?.user?.accessToken) {
     return NextResponse.json(
-      { error: "Missing env variables" },
-      { status: 500 }
+      { error: "Unauthorized: Missing GitHub access token" },
+      { status: 401 }
+    );
+  }
+
+  const token = session.user.accessToken; // セッションからトークンを取得
+  const owner =
+    req.nextUrl.searchParams.get("owner") || process.env.GITHUB_OWNER;
+  const repo =
+    req.nextUrl.searchParams.get("repo") || process.env.GITHUB_REPO_NAME;
+
+  if (!owner || !repo) {
+    return NextResponse.json(
+      { error: "Missing owner or repo parameters" },
+      { status: 400 }
     );
   }
 
@@ -43,7 +57,7 @@ export async function GET(req: NextRequest) {
       { query, variables: { owner, repo, number } },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, // セッションから取得したトークンを使用
           "Content-Type": "application/json",
         },
       }
