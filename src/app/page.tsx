@@ -1,14 +1,10 @@
 "use client";
 
-import { JSX, useEffect, useState } from "react";
+import { type JSX, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-
-type Comment = {
-  id: string;
-  body: string;
-  createdAt: string;
-};
+import type { Comment } from "./types";
+import { HeadingRenderer } from "./feature/HeadingRenderer";
 
 export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -51,13 +47,6 @@ export default function Page() {
     setEditBody("");
   };
 
-  const handleEdit = () => {
-    if (selectedComment) {
-      setIsEditing(true);
-      setEditBody(selectedComment.body);
-    }
-  };
-
   const handleSave = async () => {
     if (!selectedComment) return;
     setStatus("Saving...");
@@ -79,35 +68,6 @@ export default function Page() {
     setIsEditing(false);
     setEditBody("");
     setStatus("");
-  };
-
-  // h2 に対して編集アイコンを付けるコンポーネント
-  const HeadingRenderer = (props: {
-    level: number;
-    children: React.ReactNode;
-  }) => {
-    const { level, children } = props;
-
-    if (level === 2 && !isEditing) {
-      // h2のときにアイコンを右側に挿入
-      return (
-        <h2 className="relative group flex items-center">
-          {children}
-          <button
-            type="button"
-            className="ml-2 text-gray-500 hover:text-gray-800 transition-opacity"
-            onClick={handleEdit}
-            title="このセクションを編集"
-          >
-            ✏️
-          </button>
-        </h2>
-      );
-    }
-
-    // それ以外のヘッダは通常のまま
-    const Tag = `h${level}` as keyof JSX.IntrinsicElements;
-    return <Tag>{children}</Tag>;
   };
 
   return (
@@ -180,13 +140,34 @@ export default function Page() {
                   remarkPlugins={[remarkGfm]}
                   components={{
                     h2: ({ ...props }) => (
-                      <HeadingRenderer level={2} {...props} />
+                      <HeadingRenderer
+                        level={2}
+                        setIsEditing={setIsEditing}
+                        setEditBody={setEditBody}
+                        selectedComment={selectedComment}
+                        isEditing={isEditing}
+                        {...props}
+                      />
                     ),
                     h1: ({ ...props }) => (
-                      <HeadingRenderer level={1} {...props} />
+                      <HeadingRenderer
+                        level={1}
+                        setIsEditing={setIsEditing}
+                        setEditBody={setEditBody}
+                        selectedComment={selectedComment}
+                        isEditing={isEditing}
+                        {...props}
+                      />
                     ),
                     h3: ({ ...props }) => (
-                      <HeadingRenderer level={3} {...props} />
+                      <HeadingRenderer
+                        level={3}
+                        setIsEditing={setIsEditing}
+                        setEditBody={setEditBody}
+                        selectedComment={selectedComment}
+                        isEditing={isEditing}
+                        {...props}
+                      />
                     ),
                     // 必要に応じてh4,h5,h6も同様に
                   }}
