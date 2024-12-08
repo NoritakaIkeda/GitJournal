@@ -6,7 +6,9 @@ import type { Comment } from "./types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { JournalDetail, JournalList } from "./feature";
-
+interface DiscussionEdge {
+  node: Comment;
+}
 export default function Page() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
@@ -56,7 +58,7 @@ export default function Page() {
     }
     const discussion = await res.json();
     const c = discussion.comments.edges.map(
-      (edge: any) => edge.node as Comment
+      (edge: DiscussionEdge) => edge.node as Comment
     );
     c.sort(
       (a: Comment, b: Comment) =>
@@ -138,7 +140,7 @@ export default function Page() {
       const prevDateStr = prevDate.toISOString().slice(0, 10); // "2024-12-05"
 
       const nippouRes = await fetch(
-        `/api/nippou?sinceDate=${prevDateStr}&untilDate=${prevDateStr}`,
+        `/api/nippou?settingsGistId=&sinceDate=${prevDateStr}&untilDate=${prevDateStr}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
