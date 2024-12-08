@@ -1,10 +1,8 @@
 "use client";
 
-import { SetStateAction, useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { useEffect, useState } from "react";
 import type { Comment } from "./types";
-import { JournalEdit, JournalList, HeadingRenderer } from "./feature";
+import { JournalEdit, JournalList, JournalDetail } from "./feature";
 
 export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -88,47 +86,12 @@ export default function Page() {
                 onSave={handleSave}
               />
             ) : (
-              <div className="relative">
-                {/* Markdown表示: h2には独自レンダリング適用 */}
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    h2: ({ ...props }) => (
-                      <HeadingRenderer
-                        level={2}
-                        setIsEditing={setIsEditing}
-                        setEditBody={setEditBody}
-                        selectedComment={selectedComment}
-                        isEditing={isEditing}
-                        {...props}
-                      />
-                    ),
-                    h1: ({ ...props }) => (
-                      <HeadingRenderer
-                        level={1}
-                        setIsEditing={setIsEditing}
-                        setEditBody={setEditBody}
-                        selectedComment={selectedComment}
-                        isEditing={isEditing}
-                        {...props}
-                      />
-                    ),
-                    h3: ({ ...props }) => (
-                      <HeadingRenderer
-                        level={3}
-                        setIsEditing={setIsEditing}
-                        setEditBody={setEditBody}
-                        selectedComment={selectedComment}
-                        isEditing={isEditing}
-                        {...props}
-                      />
-                    ),
-                    // 必要に応じてh4,h5,h6も同様に
-                  }}
-                >
-                  {selectedComment.body}
-                </ReactMarkdown>
-              </div>
+              <JournalDetail
+                selectedComment={selectedComment}
+                isEditing={isEditing}
+                setIsEditing={setIsEditing}
+                setEditBody={setEditBody}
+              />
             )}
           </div>
         )}
