@@ -138,7 +138,7 @@ export default function Page() {
       const prevDateStr = prevDate.toISOString().slice(0, 10); // "2024-12-05"
 
       const nippouRes = await fetch(
-        `/api/nippou?sinceDate=${prevDateStr}&untilDate=${prevDateStr}`,
+        `/api/nippou?settingsGistId=&sinceDate=${prevDateStr}&untilDate=${prevDateStr}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

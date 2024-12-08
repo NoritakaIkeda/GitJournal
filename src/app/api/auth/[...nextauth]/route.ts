@@ -1,5 +1,5 @@
-// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
+import { getServerSession as nextAuthGetServerSession } from "next-auth";
 import type { AuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
 
@@ -26,4 +26,8 @@ export const authOptions: AuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
+// Expose the getServerSession function
+export const getServerSession = () => nextAuthGetServerSession(authOptions);
+
 export { handler as GET, handler as POST };
