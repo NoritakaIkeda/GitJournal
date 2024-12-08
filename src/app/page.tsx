@@ -1,10 +1,11 @@
 "use client";
 
-import { type JSX, useEffect, useState } from "react";
+import { type JSX, SetStateAction, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Comment } from "./types";
 import { HeadingRenderer } from "./feature/HeadingRenderer";
+import { JournalList } from "./feature";
 
 export default function Page() {
   const [comments, setComments] = useState<Comment[]>([]);
@@ -36,17 +37,6 @@ export default function Page() {
     })();
   }, []);
 
-  const extractDate = (body: string) => {
-    const match = body.match(/\d{4}\/\d{2}\/\d{2}/);
-    return match ? match[0] : "日付不明";
-  };
-
-  const handleSelectComment = (comment: Comment) => {
-    setSelectedComment(comment);
-    setIsEditing(false);
-    setEditBody("");
-  };
-
   const handleSave = async () => {
     if (!selectedComment) return;
     setStatus("Saving...");
@@ -77,29 +67,14 @@ export default function Page() {
         <div className="p-4 font-bold text-xl border-b border-gray-200">
           日報一覧
         </div>
-        {status && <div className="p-4 text-gray-500">{status}</div>}
-        {!status &&
-          comments.map((comment) => {
-            const date = extractDate(comment.body);
-            return (
-              <button
-                key={comment.id}
-                type="button"
-                tabIndex={0}
-                className={`p-4 cursor-pointer hover:bg-gray-50 ${
-                  selectedComment?.id === comment.id ? "bg-gray-200" : ""
-                }`}
-                onClick={() => handleSelectComment(comment)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    handleSelectComment(comment);
-                  }
-                }}
-              >
-                {date} の日報
-              </button>
-            );
-          })}
+        <JournalList
+          status={status}
+          comments={comments}
+          selectedComment={selectedComment}
+          setSelectedComment={setSelectedComment}
+          setIsEditing={setIsEditing}
+          setEditBody={setEditBody}
+        />
       </div>
 
       {/* Main Content */}
