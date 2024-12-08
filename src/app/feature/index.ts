@@ -1,4 +1,4 @@
 export * from "./JournalList";
 export * from "./HeadingRenderer";
-export * from "./JournalEdit";
+export * from "./EditingSection";
 export * from "./JournalDetail";

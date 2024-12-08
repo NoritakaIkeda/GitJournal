@@ -4,66 +4,35 @@ import type React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import type { Comment } from "../../types";
-import { HeadingRenderer } from "../HeadingRenderer";
-
 interface JournalDetailProps {
-  selectedComment: Comment | null;
-  isEditing: boolean;
-  setIsEditing: React.Dispatch<React.SetStateAction<boolean>>;
-  setEditBody: React.Dispatch<React.SetStateAction<string>>;
+  sec: string;
+  sectionIndex: number;
+  onEdit: (index: number) => void;
 }
 
 export const JournalDetail: React.FC<JournalDetailProps> = ({
-  selectedComment,
-  isEditing,
-  setIsEditing,
-  setEditBody,
+  sec,
+  sectionIndex,
+  onEdit,
 }) => {
-  if (!selectedComment) {
-    return <div>コメントが選択されていません。</div>;
-  }
+  const lines = sec.split("\n");
+  const headingLine = lines[0];
+  const bodyLines = lines.slice(1).join("\n");
 
   return (
-    <div className="relative">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          h2: ({ ...props }) => (
-            <HeadingRenderer
-              level={2}
-              setIsEditing={setIsEditing}
-              setEditBody={setEditBody}
-              selectedComment={selectedComment}
-              isEditing={isEditing}
-              {...props}
-            />
-          ),
-          h1: ({ ...props }) => (
-            <HeadingRenderer
-              level={1}
-              setIsEditing={setIsEditing}
-              setEditBody={setEditBody}
-              selectedComment={selectedComment}
-              isEditing={isEditing}
-              {...props}
-            />
-          ),
-          h3: ({ ...props }) => (
-            <HeadingRenderer
-              level={3}
-              setIsEditing={setIsEditing}
-              setEditBody={setEditBody}
-              selectedComment={selectedComment}
-              isEditing={isEditing}
-              {...props}
-            />
-          ),
-          // 必要に応じて h4, h5, h6 も同様に
-        }}
-      >
-        {selectedComment.body}
-      </ReactMarkdown>
+    <div className="group relative">
+      <div className="flex items-center">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{headingLine}</ReactMarkdown>
+        <button
+          type="button"
+          className="ml-2 text-gray-500 hover:text-gray-800 transition-opacity"
+          onClick={() => onEdit(sectionIndex)}
+          title="このセクションを編集"
+        >
+          ✏️
+        </button>
+      </div>
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>{bodyLines}</ReactMarkdown>
     </div>
   );
 };
