@@ -27,6 +27,7 @@ export default function Page() {
   const [editBody, setEditBody] = useState<string>("");
 
   const [nippouResult, setNippouResult] = useState<string>(""); // github-nippou結果表示用
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -156,10 +157,24 @@ export default function Page() {
   return (
     <div className="min-h-screen flex flex-row bg-gray-100">
       {/* Sidebar: Owner/Repo/Number指定フォーム + 日報一覧 */}
-      <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
-        <div className="p-4 font-bold text-xl border-b border-gray-200 flex items-center justify-between">
-          <span>日報一覧</span>
-          <div>{discussionTitle}</div>
+      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className="p-4 text-xl font-bold text-center bg-gray-200">
+          Git Journal
+        </div>
+        <div className="p-4 flex items-center space-x-2 border-b border-gray-200">
+          {/* User Avatar */}
+          {session?.user?.image ? (
+            <img
+              src={session.user.image}
+              alt="User Avatar"
+              className="w-10 h-10 rounded-full"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-sm text-gray-600">?</span>
+            </div>
+          )}
+          {/* Sign In/Out */}
           {session ? (
             <button
               type="button"
@@ -179,34 +194,102 @@ export default function Page() {
           )}
         </div>
 
-        {/* リポジトリ/ディスカッション指定フォーム */}
-        <div className="p-2 border-b border-gray-200 space-y-2">
-          <input
-            className="w-full border p-1"
-            placeholder="owner"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-          />
-          <input
-            className="w-full border p-1"
-            placeholder="repo"
-            value={repo}
-            onChange={(e) => setRepo(e.target.value)}
-          />
-          <input
-            className="w-full border p-1"
-            placeholder="discussion number"
-            value={discussionNumber}
-            onChange={(e) => setDiscussionNumber(e.target.value)}
-          />
+        {/* Toggleable Form */}
+        <div className="p-4 border-b border-gray-200">
           <button
             type="button"
             className="w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600"
-            onClick={handleLoadDiscussion}
+            onClick={() => setIsFormOpen(!isFormOpen)}
           >
-            Load
+            {isFormOpen ? "閉じる" : "Discussion設定を開く"}
           </button>
+          {isFormOpen && (
+            <div className="mt-4 space-y-4">
+              <div>
+                <label
+                  htmlFor="owner"
+                  className="block text-sm font-medium text-gray-700 flex items-center"
+                >
+                  リポジトリのオーナー
+                  <div className="relative group ml-2">
+                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                      GitHubリポジトリの所有者名を入力してください (例:
+                      NoritakaIkeda)
+                    </div>
+                  </div>
+                </label>
+
+                <input
+                  id="owner"
+                  className="mt-1 w-full border p-1"
+                  placeholder="owner"
+                  value={owner}
+                  onChange={(e) => setOwner(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="owner"
+                  className="block text-sm font-medium text-gray-700 flex items-center"
+                >
+                  リポジトリ名
+                  <div className="relative group ml-2">
+                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                      GitHubリポジトリ名を入力してください (例:
+                      GitJournal-sample-blog)
+                    </div>
+                  </div>
+                </label>
+                <input
+                  id="repo"
+                  className="mt-1 w-full border p-1"
+                  placeholder="repo"
+                  value={repo}
+                  onChange={(e) => setRepo(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="owner"
+                  className="block text-sm font-medium text-gray-700 flex items-center"
+                >
+                  ディスカッション番号
+                  <div className="relative group ml-2">
+                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                      該当のDiscussionのURLの末尾の数字を入力してください (例:
+                      https://github.com/NoritakaIkeda/
+                      GitJournal-sample-blog/discussions/2 の場合、2)
+                    </div>
+                  </div>
+                </label>
+                <input
+                  id="discussionNumber"
+                  className="mt-1 w-full border p-1"
+                  placeholder="discussion number"
+                  value={discussionNumber}
+                  onChange={(e) => setDiscussionNumber(e.target.value)}
+                />
+              </div>
+              <button
+                type="button"
+                className="w-full bg-green-500 text-white py-1 rounded hover:bg-green-600"
+                onClick={handleLoadDiscussion}
+              >
+                取得
+              </button>
+            </div>
+          )}
         </div>
+
+        {/* Discussion Title */}
+        {discussionTitle && (
+          <div className="p-4 text-lg font-bold text-gray-800 border-b border-gray-200">
+            {discussionTitle}
+          </div>
+        )}
 
         <JournalList
           status={status}
