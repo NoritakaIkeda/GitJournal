@@ -3,7 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { object, parse, regex, safeParse, string } from "valibot";
 import { getServerSession } from "../auth/[...nextauth]/getServerSession";
 
-const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const noHyphens = (str: string) => str.replace(/-/g, "");
 
 // 入力パラメータのスキーマ定義
@@ -11,8 +10,8 @@ const paramsSchema = object({
   user: string(),
   token: string(),
   settingsGistId: string(),
-  sinceDate: string([regex(dateRegex)]),
-  untilDate: string([regex(dateRegex)]),
+  sinceDate: string(),
+  untilDate: string(),
 });
 
 // レスポンスのスキーマ定義
@@ -82,7 +81,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch data from Go server", details: error.message },
+      { error: "Failed to fetch data from Go server", details: error },
       { status: 500 }
     );
   }
