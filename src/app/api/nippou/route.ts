@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { object, parse, regex, safeParse, string } from "valibot";
-import { getServerSession } from "../auth/[...nextauth]/route";
+import { getServerSession } from "../auth/[...nextauth]/getServerSession";
 
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 const noHyphens = (str: string) => str.replace(/-/g, "");
