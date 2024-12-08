@@ -9,41 +9,37 @@ type Props = {
   setEditBody: (value: SetStateAction<string>) => void;
   selectedComment: Comment;
   isEditing: boolean;
+  onEdit: () => void;
+  headingIndex: number;
 };
 
 export const HeadingRenderer = ({
   level,
   children,
-  setIsEditing,
-  setEditBody,
-  selectedComment,
+  onEdit,
+  headingIndex,
   isEditing,
 }: Props) => {
-  const handleEdit = () => {
-    if (selectedComment) {
-      setIsEditing(true);
-      setEditBody(selectedComment.body);
-    }
-  };
+  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
+
+  // 最初のh2ならheadingIndex=0、2番目のh2ならheadingIndex=1
+  // ここでheadingIndexに応じてアイコンや挙動を変えられる
+  const icon = headingIndex === 0 ? "✏️(最初のH2)" : "✏️(2番目以降)";
 
   if (level === 2 && !isEditing) {
-    // h2のときにアイコンを右側に挿入
     return (
-      <h2 className="relative group flex items-center">
+      <Tag className="relative group flex items-center">
         {children}
         <button
           type="button"
           className="ml-2 text-gray-500 hover:text-gray-800 transition-opacity"
-          onClick={handleEdit}
+          onClick={onEdit}
           title="このセクションを編集"
         >
-          ✏️
+          {icon}
         </button>
-      </h2>
+      </Tag>
     );
   }
-
-  // それ以外のヘッダは通常のまま
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
   return <Tag>{children}</Tag>;
 };

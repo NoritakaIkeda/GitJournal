@@ -1,23 +1,23 @@
-"use client";
-import type { SetStateAction } from "react";
-
-type Props = {
+interface EditingSectionProps {
+  headingLine: string;
   editBody: string;
-  setEditBody: (value: SetStateAction<string>) => void;
-  setIsEditing: (value: SetStateAction<boolean>) => void;
-  onSave: () => Promise<void>;
-};
+  setEditBody: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}
 
-export const JournalEdit = ({
+export function EditingSection({
+  headingLine,
   editBody,
   setEditBody,
-  setIsEditing,
   onSave,
-}: Props) => {
+  onCancel,
+}: EditingSectionProps) {
   return (
     <div>
+      <h2 className="relative group flex items-center">{headingLine}</h2>
       <textarea
-        className="w-full h-64 border border-gray-300 p-2"
+        className="w-full h-64 border border-gray-300 p-2 mt-2"
         value={editBody}
         onChange={(e) => setEditBody(e.target.value)}
       />
@@ -32,14 +32,11 @@ export const JournalEdit = ({
         <button
           type="button"
           className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
-          onClick={() => {
-            setIsEditing(false);
-            setEditBody("");
-          }}
+          onClick={onCancel}
         >
           キャンセル
         </button>
       </div>
     </div>
   );
-};
+}
