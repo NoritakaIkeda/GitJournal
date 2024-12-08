@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { object, parse, safeParse, string } from "valibot";
-import { getServerSession } from "../auth/[...nextauth]/getServerSession";
+import { getServerSession } from "../getServerSession/getServerSession";
 
 const noHyphens = (str: string) => str.replace(/-/g, "");
 
