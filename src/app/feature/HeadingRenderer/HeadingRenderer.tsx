@@ -1,3 +1,4 @@
+"use client";
 import type { JSX, SetStateAction } from "react";
 import type { Comment } from "../../types";
 
