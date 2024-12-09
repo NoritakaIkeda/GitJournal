@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import { getServerSession } from "../getServerSession/getServerSession";
 
 const GITHUB_GRAPHQL_ENDPOINT = "https://api.github.com/graphql";
 
@@ -15,13 +16,14 @@ mutation UpdateDiscussionComment($commentId: ID!, $body: String!) {
 `;
 
 export async function POST(req: NextRequest) {
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) {
+  const session = await getServerSession();
+  if (!session || !session.user || !session.user.accessToken) {
     return NextResponse.json(
-      { error: "Missing GITHUB_TOKEN" },
-      { status: 500 }
+      { error: "User not authenticated or missing token" },
+      { status: 401 }
     );
   }
+  const token = session.user.accessToken;
 
   const { commentId, body } = await req.json();
 
