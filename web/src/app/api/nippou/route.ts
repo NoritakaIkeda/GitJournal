@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
   console.log("user, token, settingsGistId, sinceDate, untilDate");
 
   // GoサーバーのURLを構築
-  const apiUrl = new URL("http://localhost:8080/api/nippou");
+  const apiUrl = new URL("https://git-journal-za9x.vercel.app/api/nippou");
   apiUrl.searchParams.set("user", user);
   apiUrl.searchParams.set("token", token);
   apiUrl.searchParams.set("settings_gist_id", settingsGistId);
