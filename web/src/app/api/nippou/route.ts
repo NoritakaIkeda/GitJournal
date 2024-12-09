@@ -50,7 +50,13 @@ export async function GET(req: NextRequest) {
   }
 
   const { user, token, settingsGistId, sinceDate, untilDate } = parsed.output;
-  console.log("user, token, settingsGistId, sinceDate, untilDate");
+  console.log("Validation succeeded. Parsed output:", parsed.output);
+
+  console.log("user:", user);
+  console.log("token:", token);
+  console.log("settingsGistId:", settingsGistId);
+  console.log("sinceDate:", sinceDate);
+  console.log("untilDate:", untilDate);
 
   // GoサーバーのURLを構築
   const apiUrl = new URL(process.env.API_URL);
