@@ -9,6 +9,9 @@ import { JournalDetail, JournalList } from "./feature";
 interface DiscussionEdge {
   node: Comment;
 }
+
+const STORAGE_PREFIX = "git_journal_"; // プレフィックスを追加
+
 export default function Page() {
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
@@ -16,9 +19,10 @@ export default function Page() {
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [status, setStatus] = useState<string>("loading...");
 
-  const [owner, setOwner] = useState("NoritakaIkeda");
-  const [repo, setRepo] = useState("GitJournal-sample-blog");
-  const [discussionNumber, setDiscussionNumber] = useState("2");
+  // 初期値は空文字列に設定
+  const [owner, setOwner] = useState("");
+  const [repo, setRepo] = useState("");
+  const [discussionNumber, setDiscussionNumber] = useState("");
 
   const [discussionTitle, setDiscussionTitle] = useState("");
 
@@ -114,6 +118,23 @@ export default function Page() {
     setEditingSectionIndex(null);
     setEditBody("");
     setStatus("");
+  };
+
+  // ローカルストレージから値を読み込む処理をuseEffect内で行う
+  useEffect(() => {
+    const storedOwner = localStorage.getItem(`${STORAGE_PREFIX}owner`) || "";
+    const storedRepo = localStorage.getItem(`${STORAGE_PREFIX}repo`) || "";
+    const storedDiscussionNumber =
+      localStorage.getItem(`${STORAGE_PREFIX}discussionNumber`) || "";
+
+    setOwner(storedOwner);
+    setRepo(storedRepo);
+    setDiscussionNumber(storedDiscussionNumber);
+  }, []);
+
+  // ローカルストレージへの保存関数
+  const saveToLocalStorage = (key: string, value: string) => {
+    localStorage.setItem(`${STORAGE_PREFIX}${key}`, value);
   };
 
   const handleCancel = () => {
@@ -226,22 +247,25 @@ export default function Page() {
                     <span className="text-gray-400 cursor-pointer">ℹ️</span>
                     <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
                       GitHubリポジトリの所有者名を入力してください (例:
+                      https://github.com/NoritakaIkeda/
+                      GitJournal-sample-blog/discussions/2 の場合、
                       NoritakaIkeda)
                     </div>
                   </div>
                 </label>
-
                 <input
                   id="owner"
                   className="mt-1 w-full border p-1"
-                  placeholder="owner"
                   value={owner}
-                  onChange={(e) => setOwner(e.target.value)}
+                  onChange={(e) => {
+                    setOwner(e.target.value);
+                    saveToLocalStorage("owner", e.target.value);
+                  }}
                 />
               </div>
               <div>
                 <label
-                  htmlFor="owner"
+                  htmlFor="repo"
                   className="block text-sm font-medium text-gray-700 flex items-center"
                 >
                   リポジトリ名
@@ -249,6 +273,8 @@ export default function Page() {
                     <span className="text-gray-400 cursor-pointer">ℹ️</span>
                     <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
                       GitHubリポジトリ名を入力してください (例:
+                      https://github.com/NoritakaIkeda/
+                      GitJournal-sample-blog/discussions/2 の場合、
                       GitJournal-sample-blog)
                     </div>
                   </div>
@@ -256,14 +282,16 @@ export default function Page() {
                 <input
                   id="repo"
                   className="mt-1 w-full border p-1"
-                  placeholder="repo"
                   value={repo}
-                  onChange={(e) => setRepo(e.target.value)}
+                  onChange={(e) => {
+                    setRepo(e.target.value);
+                    saveToLocalStorage("repo", e.target.value);
+                  }}
                 />
               </div>
               <div>
                 <label
-                  htmlFor="owner"
+                  htmlFor="discussionNumber"
                   className="block text-sm font-medium text-gray-700 flex items-center"
                 >
                   ディスカッション番号
@@ -279,9 +307,11 @@ export default function Page() {
                 <input
                   id="discussionNumber"
                   className="mt-1 w-full border p-1"
-                  placeholder="discussion number"
                   value={discussionNumber}
-                  onChange={(e) => setDiscussionNumber(e.target.value)}
+                  onChange={(e) => {
+                    setDiscussionNumber(e.target.value);
+                    saveToLocalStorage("discussionNumber", e.target.value);
+                  }}
                 />
               </div>
               <button
