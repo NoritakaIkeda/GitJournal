@@ -7,7 +7,6 @@ const noHyphens = (str: string) => str.replace(/-/g, "");
 
 // 入力パラメータのスキーマ定義
 const paramsSchema = object({
-  user: string(),
   token: string(),
   settingsGistId: optional(string()),
   sinceDate: string(),
@@ -33,7 +32,6 @@ export async function GET(req: NextRequest) {
 
   // パラメータの取得とバリデーション
   const parsed = safeParse(paramsSchema, {
-    user: session.user?.login,
     token: session.user?.accessToken,
     settingsGistId: searchParams.get("settingsGistId"),
     sinceDate: searchParams.get("sinceDate"),
@@ -49,12 +47,10 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  const { user, token, settingsGistId, sinceDate, untilDate } = parsed.output;
-  console.log("user, token, settingsGistId, sinceDate, untilDate");
+  const { token, settingsGistId, sinceDate, untilDate } = parsed.output;
 
   // GoサーバーのURLを構築
   const apiUrl = new URL("https://git-journal-za9x.vercel.app/api/nippou");
-  apiUrl.searchParams.set("user", user);
   apiUrl.searchParams.set("token", token);
   apiUrl.searchParams.set("settings_gist_id", settingsGistId || "");
   apiUrl.searchParams.set("since_date", noHyphens(sinceDate));
