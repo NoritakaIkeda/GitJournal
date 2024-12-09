@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
   // パラメータの取得とバリデーション
   const parsed = safeParse(paramsSchema, {
-    user: session.user?.login,
+    user: session.user?.login ?? "",
     token: session.user?.accessToken,
     settingsGistId: searchParams.get("settingsGistId"),
     sinceDate: searchParams.get("sinceDate"),

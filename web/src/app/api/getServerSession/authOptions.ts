@@ -12,8 +12,8 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async session({ session, token }) {
       if (session.user) {
-        session.user.accessToken = token.accessToken;
-        session.user.login = token.login;
+        session.user.accessToken = token.accessToken as string;
+        session.user.login = token.login as string;
       }
       return session;
     },
