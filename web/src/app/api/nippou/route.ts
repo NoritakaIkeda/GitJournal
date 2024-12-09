@@ -41,16 +41,11 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
+    // バリデーション失敗時
+    console.log("Validation failed. Issues:", parsed.issues);
     return NextResponse.json({
       success: "false",
       error: "Validation failed",
-      details: parsed.error.issues.map(
-        (issue: { path: any[]; message: any; code: any }) => ({
-          field: issue.path.join("."), // エラーが発生したフィールド名
-          message: issue.message, // エラー内容の説明
-          code: issue.code, // エラーコード（例: invalid_type）
-        })
-      ),
     });
   }
 
