@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { object, parse, safeParse, string } from "valibot";
+import { object, parse, safeParse, string, optional } from "valibot";
 import { getServerSession } from "../getServerSession/getServerSession";
 
 const noHyphens = (str: string) => str.replace(/-/g, "");
@@ -9,7 +9,7 @@ const noHyphens = (str: string) => str.replace(/-/g, "");
 const paramsSchema = object({
   user: string(),
   token: string(),
-  settingsGistId: string(),
+  settingsGistId: optional(string()),
   sinceDate: string(),
   untilDate: string(),
 });
@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid or missing parameters" },
-      { status: 400 }
-    );
+    return NextResponse.json({
+      success: "false",
+      error: "Invalid credentials",
+    });
   }
 
   const { user, token, settingsGistId, sinceDate, untilDate } = parsed.output;
@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   const apiUrl = new URL("https://git-journal-za9x.vercel.app/api/nippou");
   apiUrl.searchParams.set("user", user);
   apiUrl.searchParams.set("token", token);
-  apiUrl.searchParams.set("settings_gist_id", settingsGistId);
+  apiUrl.searchParams.set("settings_gist_id", settingsGistId || "");
   apiUrl.searchParams.set("since_date", noHyphens(sinceDate));
   apiUrl.searchParams.set("until_date", noHyphens(untilDate));
 
