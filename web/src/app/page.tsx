@@ -153,7 +153,7 @@ export default function Page() {
         }
 
         const nippouData = await nippouRes.json();
-        if (nippouData.success) {
+        if (nippouData.result) {
           setNippouResult(nippouData.result);
         } else {
           setNippouResult("Error fetching nippou data");
