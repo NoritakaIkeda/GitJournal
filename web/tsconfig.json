@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./web",
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "checkJs": false,
@@ -25,11 +26,12 @@
     }
   },
   "include": [
-    "src/**/*",
+    "web/src/**/*",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "web/app"
   ],
   "exclude": ["node_modules"]
 }
