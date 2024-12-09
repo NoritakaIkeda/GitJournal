@@ -10,17 +10,21 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      if (account) {
-        token.accessToken = account.access_token;
-      }
-      return token;
-    },
     async session({ session, token }) {
       if (session.user) {
         session.user.accessToken = token.accessToken;
+        session.user.login = token.login;
       }
       return session;
+    },
+    async jwt({ token, account, profile }) {
+      if (account) {
+        token.accessToken = account.access_token;
+        // @ts-expect-error ... GitHubProfile
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        token.login = profile?.login;
+      }
+      return token;
     },
   },
 };
