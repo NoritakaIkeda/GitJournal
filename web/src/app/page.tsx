@@ -19,15 +19,10 @@ export default function Page() {
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [status, setStatus] = useState<string>("loading...");
 
-  const [owner, setOwner] = useState(
-    () => localStorage.getItem(`${STORAGE_PREFIX}owner`) || ""
-  );
-  const [repo, setRepo] = useState(
-    () => localStorage.getItem(`${STORAGE_PREFIX}repo`) || ""
-  );
-  const [discussionNumber, setDiscussionNumber] = useState(
-    () => localStorage.getItem(`${STORAGE_PREFIX}discussionNumber`) || ""
-  );
+  // 初期値は空文字列に設定
+  const [owner, setOwner] = useState("");
+  const [repo, setRepo] = useState("");
+  const [discussionNumber, setDiscussionNumber] = useState("");
 
   const [discussionTitle, setDiscussionTitle] = useState("");
 
@@ -124,6 +119,18 @@ export default function Page() {
     setEditBody("");
     setStatus("");
   };
+
+  // ローカルストレージから値を読み込む処理をuseEffect内で行う
+  useEffect(() => {
+    const storedOwner = localStorage.getItem(`${STORAGE_PREFIX}owner`) || "";
+    const storedRepo = localStorage.getItem(`${STORAGE_PREFIX}repo`) || "";
+    const storedDiscussionNumber =
+      localStorage.getItem(`${STORAGE_PREFIX}discussionNumber`) || "";
+
+    setOwner(storedOwner);
+    setRepo(storedRepo);
+    setDiscussionNumber(storedDiscussionNumber);
+  }, []);
 
   // ローカルストレージへの保存関数
   const saveToLocalStorage = (key: string, value: string) => {
