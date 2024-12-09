@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { object, parse, safeParse, string } from "valibot";
+import { object, parse, safeParse, string, optional } from "valibot";
 import { getServerSession } from "../getServerSession/getServerSession";
 
 const noHyphens = (str: string) => str.replace(/-/g, "");
@@ -9,7 +9,7 @@ const noHyphens = (str: string) => str.replace(/-/g, "");
 const paramsSchema = object({
   user: string(),
   token: string(),
-  settingsGistId: string(),
+  settingsGistId: optional(string()),
   sinceDate: string(),
   untilDate: string(),
 });
@@ -40,12 +40,12 @@ export async function GET(req: NextRequest) {
     untilDate: searchParams.get("untilDate"),
   });
 
-  // if (!parsed.success) {
-  //   return NextResponse.json({
-  //     success: "false",
-  //     error: "Invalid credentials",
-  //   });
-  // }
+  if (!parsed.success) {
+    return NextResponse.json({
+      success: "false",
+      error: "Invalid credentials",
+    });
+  }
 
   const { user, token, settingsGistId, sinceDate, untilDate } = parsed.output;
   console.log("user, token, settingsGistId, sinceDate, untilDate");
