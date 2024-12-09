@@ -20,16 +20,17 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["web/src/*"],
       "@lib/*": ["./lib/*"]
     }
   },
   "include": [
-    "src/**/*",
+    "web/src/**/*",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "web/app"
   ],
   "exclude": ["node_modules"]
 }
