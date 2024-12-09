@@ -41,9 +41,11 @@ export async function GET(req: NextRequest) {
   });
 
   if (!parsed.success) {
+    // バリデーション失敗時
+    console.log("Validation failed. Issues:", parsed.issues);
     return NextResponse.json({
       success: "false",
-      error: "Invalid credentials",
+      error: "Validation failed",
     });
   }
 
