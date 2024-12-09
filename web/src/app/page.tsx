@@ -133,25 +133,34 @@ export default function Page() {
     // 編集ボタン押下でgithub-nippouを叩く(取得している日付から前日を計算)
     const dateMatch = selectedComment?.body.match(/\d{4}\/\d{2}\/\d{2}/);
     if (dateMatch) {
-      const currentDateStr = dateMatch[0]; // "2024/12/06" のような
+      const currentDateStr = dateMatch[0];
       const currentDate = new Date(currentDateStr.replace(/\//g, "-"));
       const prevDate = new Date(currentDate);
       prevDate.setDate(prevDate.getDate() - 1);
-      const prevDateStr = prevDate.toISOString().slice(0, 10); // "2024-12-05"
+      const prevDateStr = prevDate.toISOString().slice(0, 10);
 
-      const nippouRes = await fetch(
-        `/api/nippou?settingsGistId=&sinceDate=${prevDateStr}&untilDate=${prevDateStr}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const url = new URL("/api/nippou", window.location.href);
+      url.searchParams.set("settingsGistId", ""); // 必要なら値を設定
+      url.searchParams.set("sinceDate", prevDateStr);
+      url.searchParams.set("untilDate", prevDateStr);
+
+      try {
+        const nippouRes = await fetch(url.toString());
+
+        if (!nippouRes.ok) {
+          const errorText = await nippouRes.text();
+          throw new Error(`Fetch failed: ${errorText}`);
         }
-      );
-      const nippouData = await nippouRes.json();
-      if (nippouData.success) {
-        setNippouResult(nippouData.result);
-      } else {
-        setNippouResult("Error fetching nippou data");
+
+        const nippouData = await nippouRes.json();
+        if (nippouData.success) {
+          setNippouResult(nippouData.result);
+        } else {
+          setNippouResult("Error fetching nippou data");
+        }
+      } catch (error) {
+        console.error("Error fetching nippou data:", error);
+        setNippouResult("An unexpected error occurred");
       }
     }
   };
