@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
     console.log("Validation failed. Issues:", parsed.issues);
     return NextResponse.json({
       success: "false",
-      error: "Validation failed",
+      error: parsed.issues,
     });
   }
 
