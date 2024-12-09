@@ -40,12 +40,12 @@ export async function GET(req: NextRequest) {
     untilDate: searchParams.get("untilDate"),
   });
 
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid or missing parameters" },
-      { status: 400 }
-    );
-  }
+  // if (!parsed.success) {
+  //   return NextResponse.json({
+  //     success: "false",
+  //     error: "Invalid credentials",
+  //   });
+  // }
 
   const { user, token, settingsGistId, sinceDate, untilDate } = parsed.output;
   console.log("user, token, settingsGistId, sinceDate, untilDate");
