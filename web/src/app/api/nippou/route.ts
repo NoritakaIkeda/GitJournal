@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
   const apiUrl = new URL("https://git-journal-za9x.vercel.app/api/nippou");
   apiUrl.searchParams.set("user", user);
   apiUrl.searchParams.set("token", token);
-  apiUrl.searchParams.set("settings_gist_id", settingsGistId);
+  apiUrl.searchParams.set("settings_gist_id", settingsGistId || "");
   apiUrl.searchParams.set("since_date", noHyphens(sinceDate));
   apiUrl.searchParams.set("until_date", noHyphens(untilDate));
 
