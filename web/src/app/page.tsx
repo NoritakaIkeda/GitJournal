@@ -401,9 +401,8 @@ export default function Page() {
               type="button"
               onClick={handleCreateNewComment}
               className="w-full mb-2 bg-purple-500 text-white py-1 rounded hover:bg-purple-600"
-              disabled={!!template}
             >
-              新規作成
+              今日の日報を作成
             </button>
             <button
               type="button"
