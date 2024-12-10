@@ -184,7 +184,7 @@ export default function Page() {
         if (nippouData.result) {
           setNippouResult(nippouData.result);
         } else {
-          setNippouResult("Error fetching nippou data");
+          setNippouResult("昨日のアクティビティは空です");
         }
       } catch (error) {
         console.error("Error fetching nippou data:", error);
