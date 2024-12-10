@@ -6,11 +6,12 @@ import type { Comment } from "./types";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { JournalDetail, JournalList } from "./feature";
+
 interface DiscussionEdge {
   node: Comment;
 }
 
-const STORAGE_PREFIX = "git_journal_"; // プレフィックスを追加
+const STORAGE_PREFIX = "git_journal_";
 
 export default function Page() {
   const { data: session } = useSession();
@@ -19,7 +20,7 @@ export default function Page() {
   const [selectedComment, setSelectedComment] = useState<Comment | null>(null);
   const [status, setStatus] = useState<string>("loading...");
 
-  // 初期値は空文字列に設定
+  // Discussion指定用
   const [owner, setOwner] = useState("");
   const [repo, setRepo] = useState("");
   const [discussionNumber, setDiscussionNumber] = useState("");
@@ -32,8 +33,12 @@ export default function Page() {
   );
   const [editBody, setEditBody] = useState<string>("");
 
-  const [nippouResult, setNippouResult] = useState<string>(""); // github-nippou結果表示用
+  const [nippouResult, setNippouResult] = useState<string>("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // テンプレート用状態
+  const [template, setTemplate] = useState<string>("");
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -51,7 +56,6 @@ export default function Page() {
       `/api/getDiscussion?owner=${owner}&repo=${repo}&number=${discussionNumber}`,
       {
         headers: {
-          // 認証ヘッダをユーザトークンで追加
           Authorization: `Bearer ${token}`,
         },
       }
@@ -99,7 +103,7 @@ export default function Page() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // 認証必須
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ commentId: selectedComment.id, body: newBody }),
     });
@@ -120,19 +124,22 @@ export default function Page() {
     setStatus("");
   };
 
-  // ローカルストレージから値を読み込む処理をuseEffect内で行う
+  // ローカルストレージからの復元
   useEffect(() => {
     const storedOwner = localStorage.getItem(`${STORAGE_PREFIX}owner`) || "";
     const storedRepo = localStorage.getItem(`${STORAGE_PREFIX}repo`) || "";
     const storedDiscussionNumber =
       localStorage.getItem(`${STORAGE_PREFIX}discussionNumber`) || "";
+    const storedTemplate =
+      localStorage.getItem(`${STORAGE_PREFIX}template`) || "";
 
     setOwner(storedOwner);
     setRepo(storedRepo);
     setDiscussionNumber(storedDiscussionNumber);
+    setTemplate(storedTemplate);
   }, []);
 
-  // ローカルストレージへの保存関数
+  // ローカルストレージ保存
   const saveToLocalStorage = (key: string, value: string) => {
     localStorage.setItem(`${STORAGE_PREFIX}${key}`, value);
   };
@@ -151,7 +158,7 @@ export default function Page() {
     setEditingSectionIndex(sectionIndex);
     setEditBody(defaultValue);
 
-    // 編集ボタン押下でgithub-nippouを叩く(取得している日付から前日を計算)
+    // github-nippou結果取得処理(省略可)
     const dateMatch = selectedComment?.body.match(/\d{4}\/\d{2}\/\d{2}/);
     if (dateMatch) {
       const currentDateStr = dateMatch[0];
@@ -161,7 +168,7 @@ export default function Page() {
       const prevDateStr = prevDate.toISOString().slice(0, 10);
 
       const url = new URL("/api/nippou", window.location.href);
-      url.searchParams.set("settingsGistId", ""); // 必要なら値を設定
+      url.searchParams.set("settingsGistId", "");
       url.searchParams.set("sinceDate", prevDateStr);
       url.searchParams.set("untilDate", prevDateStr);
 
@@ -186,15 +193,83 @@ export default function Page() {
     }
   };
 
+  // テンプレート設定モーダル関連
+  const handleOpenTemplateModal = () => {
+    setIsTemplateModalOpen(true);
+  };
+
+  const handleCloseTemplateModal = () => {
+    setIsTemplateModalOpen(false);
+  };
+
+  const handleSaveTemplate = () => {
+    saveToLocalStorage("template", template);
+    handleCloseTemplateModal();
+  };
+
+  // 新規コメント作成
+  const handleCreateNewComment = async () => {
+    if (!token || !owner || !repo || !discussionNumber) {
+      alert("Discussion設定が不完全です");
+      return;
+    }
+    if (!template) {
+      alert("テンプレートが設定されていません。");
+      return;
+    }
+
+    // 日付を取得 (例: 今日の日付を2024/MM/DD形式で)
+    // 固定で2024年とする場合:
+    // const now = new Date();
+    // const year = 2024;
+    // const month = String(now.getMonth() + 1).padStart(2, "0");
+    // const day = String(now.getDate()).padStart(2, "0");
+    // const dateStr = `${year}/${month}/${day}`;
+
+    // 常に2024年の日付とするなら、実行日の日付に合わせる場合は上記を参照
+    const now = new Date();
+    const year = new Date().getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const dateStr = `${year}/${month}/${day}`;
+
+    const body = `${dateStr}\n\n${template}`;
+
+    setStatus("Creating new comment...");
+    const res = await fetch("/api/addComment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        discussionNumber: Number(discussionNumber),
+        owner,
+        repo,
+        body,
+      }),
+    });
+
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error(errText);
+      setStatus("Error creating comment");
+      return;
+    }
+
+    // 成功時はDiscussionを再取得
+    setStatus("");
+    await handleLoadDiscussion();
+  };
+
   return (
     <div className="min-h-screen flex flex-row bg-gray-100">
-      {/* Sidebar: Owner/Repo/Number指定フォーム + 日報一覧 */}
+      {/* Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
         <div className="p-4 text-xl font-bold text-center bg-gray-200">
           Git Journal
         </div>
         <div className="p-4 flex items-center space-x-2 border-b border-gray-200">
-          {/* User Avatar */}
           {session?.user?.image ? (
             <img
               src={session.user.image}
@@ -206,7 +281,6 @@ export default function Page() {
               <span className="text-sm text-gray-600">?</span>
             </div>
           )}
-          {/* Sign In/Out */}
           {session ? (
             <button
               type="button"
@@ -226,7 +300,7 @@ export default function Page() {
           )}
         </div>
 
-        {/* Toggleable Form */}
+        {/* Discussion設定フォームトグル */}
         <div className="p-4 border-b border-gray-200">
           <button
             type="button"
@@ -246,10 +320,7 @@ export default function Page() {
                   <div className="relative group ml-2">
                     <span className="text-gray-400 cursor-pointer">ℹ️</span>
                     <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      GitHubリポジトリの所有者名を入力してください (例:
-                      https://github.com/NoritakaIkeda/
-                      GitJournal-sample-blog/discussions/2 の場合、
-                      NoritakaIkeda)
+                      GitHubリポジトリの所有者名を入力してください
                     </div>
                   </div>
                 </label>
@@ -272,10 +343,7 @@ export default function Page() {
                   <div className="relative group ml-2">
                     <span className="text-gray-400 cursor-pointer">ℹ️</span>
                     <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      GitHubリポジトリ名を入力してください (例:
-                      https://github.com/NoritakaIkeda/
-                      GitJournal-sample-blog/discussions/2 の場合、
-                      GitJournal-sample-blog)
+                      GitHubリポジトリ名を入力してください
                     </div>
                   </div>
                 </label>
@@ -298,9 +366,7 @@ export default function Page() {
                   <div className="relative group ml-2">
                     <span className="text-gray-400 cursor-pointer">ℹ️</span>
                     <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      該当のDiscussionのURLの末尾の数字を入力してください (例:
-                      https://github.com/NoritakaIkeda/
-                      GitJournal-sample-blog/discussions/2 の場合、2)
+                      DiscussionのURL末尾の数字
                     </div>
                   </div>
                 </label>
@@ -325,10 +391,27 @@ export default function Page() {
           )}
         </div>
 
-        {/* Discussion Title */}
+        {/* Discussion Title + 新規作成ボタン、テンプレート設定ボタン */}
         {discussionTitle && (
-          <div className="p-4 text-lg font-bold text-gray-800 border-b border-gray-200">
-            {discussionTitle}
+          <div className="p-4 border-b border-gray-200">
+            <div className="text-lg font-bold text-gray-800 mb-2">
+              {discussionTitle}
+            </div>
+            <button
+              type="button"
+              onClick={handleCreateNewComment}
+              className="w-full mb-2 bg-purple-500 text-white py-1 rounded hover:bg-purple-600"
+              disabled={!!template}
+            >
+              新規作成
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenTemplateModal}
+              className="w-full bg-gray-500 text-white py-1 rounded hover:bg-gray-600"
+            >
+              テンプレート設定
+            </button>
           </div>
         )}
 
@@ -360,7 +443,6 @@ export default function Page() {
               const headingLine = lines[0].replace(/^##\s*/, "");
 
               if (editingSectionIndex === sectionIndex) {
-                // 編集中UI。見出しを表示し、その下にtextareaとgithub-nippou結果を表示
                 return (
                   <div key={sectionIndex}>
                     <h2 className="relative group flex items-center">
@@ -388,7 +470,6 @@ export default function Page() {
                       </button>
                     </div>
 
-                    {/* github-nippou結果表示 */}
                     {nippouResult && (
                       <div className="mt-4 p-2 border border-gray-300 rounded bg-white">
                         <h3 className="font-bold text-lg mb-2">
@@ -402,7 +483,6 @@ export default function Page() {
                   </div>
                 );
               }
-              // 通常表示モード
               return (
                 <JournalDetail
                   key={sectionIndex}
@@ -415,6 +495,43 @@ export default function Page() {
           </div>
         )}
       </div>
+
+      {/* テンプレート設定モーダル */}
+      {isTemplateModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div
+            className="fixed inset-0 bg-black opacity-50"
+            onClick={handleCloseTemplateModal}
+            onKeyDown={handleCloseTemplateModal}
+            role="button"
+            tabIndex={0}
+          />
+          <div className="bg-white rounded p-4 z-10 w-1/2">
+            <h2 className="text-xl font-bold mb-2">テンプレート設定</h2>
+            <textarea
+              className="w-full h-64 border border-gray-300 p-2"
+              value={template}
+              onChange={(e) => setTemplate(e.target.value)}
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+                onClick={handleSaveTemplate}
+              >
+                保存
+              </button>
+              <button
+                type="button"
+                className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
+                onClick={handleCloseTemplateModal}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
