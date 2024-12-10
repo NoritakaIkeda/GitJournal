@@ -218,17 +218,8 @@ export default function Page() {
       return;
     }
 
-    // 日付を取得 (例: 今日の日付を2024/MM/DD形式で)
-    // 固定で2024年とする場合:
-    // const now = new Date();
-    // const year = 2024;
-    // const month = String(now.getMonth() + 1).padStart(2, "0");
-    // const day = String(now.getDate()).padStart(2, "0");
-    // const dateStr = `${year}/${month}/${day}`;
-
-    // 常に2024年の日付とするなら、実行日の日付に合わせる場合は上記を参照
     const now = new Date();
-    const year = new Date().getFullYear();
+    const year = now.getFullYear(); // 年を動的に取得
     const month = String(now.getMonth() + 1).padStart(2, "0");
     const day = String(now.getDate()).padStart(2, "0");
     const dateStr = `${year}/${month}/${day}`;
@@ -426,8 +417,8 @@ export default function Page() {
         />
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
+      {/* Main Content: ここにスクロール適用 */}
+      <div className="flex-1 p-6 overflow-y-auto">
         {selectedComment && sections.length > 0 && (
           <div className="prose prose-sm max-w-none relative">
             {sections[0].trim() && (
@@ -447,38 +438,46 @@ export default function Page() {
                     <h2 className="relative group flex items-center">
                       {headingLine}
                     </h2>
-                    <textarea
-                      className="w-full h-64 border border-gray-300 p-2 mt-2"
-                      value={editBody}
-                      onChange={(e) => setEditBody(e.target.value)}
-                    />
-                    <div className="mt-2 flex gap-2">
-                      <button
-                        type="button"
-                        className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                        onClick={handleSave}
-                      >
-                        保存
-                      </button>
-                      <button
-                        type="button"
-                        className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
-                        onClick={handleCancel}
-                      >
-                        キャンセル
-                      </button>
-                    </div>
 
-                    {nippouResult && (
-                      <div className="mt-4 p-2 border border-gray-300 rounded bg-white">
-                        <h3 className="font-bold text-lg mb-2">
-                          昨日のGitHubアクティビティ
-                        </h3>
-                        <pre className="whitespace-pre-wrap">
-                          {nippouResult}
-                        </pre>
+                    {/* 編集画面全体をflexで横並びにする */}
+                    <div className="flex gap-4 items-start">
+                      {/* テキストエリア側 */}
+                      <div className="flex-1 h-64 flex flex-col">
+                        <textarea
+                          className="w-full h-full border border-gray-300 p-2 resize-none"
+                          value={editBody}
+                          onChange={(e) => setEditBody(e.target.value)}
+                        />
+                        <div className="mt-2 flex gap-2">
+                          <button
+                            type="button"
+                            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+                            onClick={handleSave}
+                          >
+                            保存
+                          </button>
+                          <button
+                            type="button"
+                            className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
+                            onClick={handleCancel}
+                          >
+                            キャンセル
+                          </button>
+                        </div>
                       </div>
-                    )}
+
+                      {/* アクティビティ側: 同じ高さ(h-64)でoverflow-y-auto */}
+                      {nippouResult && (
+                        <div className="flex-1 h-64 border border-gray-300 rounded bg-white overflow-y-auto p-2">
+                          <h3 className="font-bold text-lg mb-2">
+                            昨日のGitHubアクティビティ
+                          </h3>
+                          <pre className="whitespace-pre-wrap">
+                            {nippouResult}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 );
               }
