@@ -543,8 +543,8 @@ export default function Page() {
       <footer className="border-t border-gray-300 bg-gray-100 py-4 px-4 text-sm text-gray-700">
         <h3 className="font-bold mb-2">このツールの使い方</h3>
         <p className="mb-2">
-          github-nippouは、GitHub上のissueやpull
-          requestなどのアクティビティを日ごとにまとめて表示してくれるCLIツールです。
+          このサイト、Git Journal は、GitHub上のアクティビティを集約して GitHub
+          の Discussion へ日報を投稿できるツールです。
         </p>
         <p className="mb-2">
           このサイトは、@masutaka さんが作成された
