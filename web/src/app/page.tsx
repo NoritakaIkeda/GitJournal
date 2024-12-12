@@ -440,14 +440,18 @@ export default function Page() {
                     </h2>
 
                     {/* 編集画面全体をflexで横並びにする */}
-                    <div className="flex gap-4 items-start">
+                    <div className="flex gap-4 items-stretch">
                       {/* テキストエリア側 */}
-                      <div className="flex-1 h-64 flex flex-col">
-                        <textarea
-                          className="w-full h-full border border-gray-300 p-2 resize-none"
-                          value={editBody}
-                          onChange={(e) => setEditBody(e.target.value)}
-                        />
+                      <div className="flex-1 flex flex-col">
+                        {/* テキストエリア部分を固定高さで確保 */}
+                        <div className="h-64 flex flex-col">
+                          <textarea
+                            className="w-full h-full border border-gray-300 p-2 resize-none"
+                            value={editBody}
+                            onChange={(e) => setEditBody(e.target.value)}
+                          />
+                        </div>
+                        {/* ボタン部分はテキストエリアの下に配置 */}
                         <div className="mt-2 flex gap-2">
                           <button
                             type="button"
@@ -467,16 +471,18 @@ export default function Page() {
                       </div>
 
                       {/* アクティビティ側: 同じ高さ(h-64)でoverflow-y-auto */}
-                      {nippouResult && (
-                        <div className="flex-1 h-64 border border-gray-300 rounded bg-white overflow-y-auto p-2">
-                          <h3 className="font-bold text-lg mb-2">
-                            昨日のGitHubアクティビティ
-                          </h3>
+                      <div className="flex-1 h-64 border border-gray-300 rounded bg-white overflow-y-auto p-2">
+                        <h3 className="font-bold text-lg mb-2">
+                          昨日のGitHubアクティビティ
+                        </h3>
+                        {nippouResult ? (
                           <pre className="whitespace-pre-wrap">
                             {nippouResult}
                           </pre>
-                        </div>
-                      )}
+                        ) : (
+                          <div>Loading</div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
