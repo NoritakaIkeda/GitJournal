@@ -254,288 +254,320 @@ export default function Page() {
   };
 
   return (
-    <div className="min-h-screen flex flex-row bg-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 text-xl font-bold text-center bg-gray-200 text-gray-900">
-          Git Journal
-        </div>
-        <div className="p-4 flex items-center space-x-2 border-b border-gray-200">
-          {session?.user?.image ? (
-            <img
-              src={session.user.image}
-              alt="User Avatar"
-              className="w-10 h-10 rounded-full"
-            />
-          ) : (
-            <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-sm text-gray-600">?</span>
-            </div>
-          )}
-          {session ? (
-            <button
-              type="button"
-              className="text-sm text-gray-600 underline"
-              onClick={() => signOut()}
-            >
-              サインアウト
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="text-sm text-blue-500 underline"
-              onClick={() => signIn("github")}
-            >
-              GitHubでサインイン
-            </button>
-          )}
-        </div>
-
-        {/* Discussion設定フォームトグル */}
-        <div className="p-4 border-b border-gray-200">
-          <button
-            type="button"
-            className="w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600"
-            onClick={() => setIsFormOpen(!isFormOpen)}
-          >
-            {isFormOpen ? "閉じる" : "Discussion設定を開く"}
-          </button>
-          {isFormOpen && (
-            <div className="mt-4 space-y-4">
-              <div>
-                <label
-                  htmlFor="owner"
-                  className="block text-sm font-medium text-gray-700 flex items-center"
-                >
-                  リポジトリのオーナー
-                  <div className="relative group ml-2">
-                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
-                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      GitHubリポジトリの所有者名を入力してください
-                    </div>
-                  </div>
-                </label>
-                <input
-                  id="owner"
-                  className="mt-1 w-full border p-1"
-                  value={owner}
-                  onChange={(e) => {
-                    setOwner(e.target.value);
-                    saveToLocalStorage("owner", e.target.value);
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="repo"
-                  className="block text-sm font-medium text-gray-700 flex items-center"
-                >
-                  リポジトリ名
-                  <div className="relative group ml-2">
-                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
-                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      GitHubリポジトリ名を入力してください
-                    </div>
-                  </div>
-                </label>
-                <input
-                  id="repo"
-                  className="mt-1 w-full border p-1"
-                  value={repo}
-                  onChange={(e) => {
-                    setRepo(e.target.value);
-                    saveToLocalStorage("repo", e.target.value);
-                  }}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="discussionNumber"
-                  className="block text-sm font-medium text-gray-700 flex items-center"
-                >
-                  ディスカッション番号
-                  <div className="relative group ml-2">
-                    <span className="text-gray-400 cursor-pointer">ℹ️</span>
-                    <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
-                      DiscussionのURL末尾の数字
-                    </div>
-                  </div>
-                </label>
-                <input
-                  id="discussionNumber"
-                  className="mt-1 w-full border p-1"
-                  value={discussionNumber}
-                  onChange={(e) => {
-                    setDiscussionNumber(e.target.value);
-                    saveToLocalStorage("discussionNumber", e.target.value);
-                  }}
-                />
-              </div>
-              <button
-                type="button"
-                className="w-full bg-green-500 text-white py-1 rounded hover:bg-green-600"
-                onClick={handleLoadDiscussion}
-              >
-                取得
-              </button>
-            </div>
-          )}
-        </div>
-
-        {/* Discussion Title + 新規作成ボタン、テンプレート設定ボタン */}
-        {discussionTitle && (
-          <div className="p-4 border-b border-gray-200">
-            <div className="text-lg font-bold text-gray-800 mb-2">
-              {discussionTitle}
-            </div>
-            <button
-              type="button"
-              onClick={handleCreateNewComment}
-              className="w-full mb-2 bg-purple-500 text-white py-1 rounded hover:bg-purple-600"
-            >
-              今日の日報を作成
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenTemplateModal}
-              className="w-full bg-gray-500 text-white py-1 rounded hover:bg-gray-600"
-            >
-              テンプレート設定
-            </button>
+    <div className="min-h-screen flex flex-col bg-gray-100">
+      <div className="flex flex-row flex-1">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+          <div className="p-4 text-xl font-bold text-center bg-gray-200 text-gray-900">
+            Git Journal
           </div>
-        )}
-
-        <JournalList
-          status={status}
-          comments={comments}
-          onSelectComment={(comment) => {
-            setSelectedComment(comment);
-            setEditingSectionIndex(null);
-            setEditBody("");
-            setNippouResult("");
-          }}
-        />
-      </div>
-
-      {/* Main Content: ここにスクロール適用 */}
-      <div className="flex-1 p-6 overflow-y-auto">
-        {selectedComment && sections.length > 0 && (
-          <div className="prose prose-sm max-w-none relative">
-            {sections[0].trim() && (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {sections[0]}
-              </ReactMarkdown>
+          <div className="p-4 flex items-center space-x-2 border-b border-gray-200">
+            {session?.user?.image ? (
+              <img
+                src={session.user.image}
+                alt="User Avatar"
+                className="w-10 h-10 rounded-full"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-sm text-gray-600">?</span>
+              </div>
             )}
+            {session ? (
+              <button
+                type="button"
+                className="text-sm text-gray-600 underline"
+                onClick={() => signOut()}
+              >
+                サインアウト
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="text-sm text-blue-500 underline"
+                onClick={() => signIn("github")}
+              >
+                GitHubでサインイン
+              </button>
+            )}
+          </div>
 
-            {sections.slice(1).map((sec, i) => {
-              const sectionIndex = i + 1;
-              const lines = sec.split("\n");
-              const headingLine = lines[0].replace(/^##\s*/, "");
-
-              if (editingSectionIndex === sectionIndex) {
-                return (
-                  <div key={sectionIndex}>
-                    <h2 className="relative group flex items-center">
-                      {headingLine}
-                    </h2>
-
-                    {/* 編集画面全体をflexで横並びにする */}
-                    <div className="flex gap-4 items-stretch">
-                      {/* テキストエリア側 */}
-                      <div className="flex-1 flex flex-col">
-                        {/* テキストエリア部分を固定高さで確保 */}
-                        <div className="h-64 flex flex-col">
-                          <textarea
-                            className="w-full h-full border border-gray-300 p-2 resize-none"
-                            value={editBody}
-                            onChange={(e) => setEditBody(e.target.value)}
-                          />
-                        </div>
-                        {/* ボタン部分はテキストエリアの下に配置 */}
-                        <div className="mt-2 flex gap-2">
-                          <button
-                            type="button"
-                            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                            onClick={handleSave}
-                          >
-                            保存
-                          </button>
-                          <button
-                            type="button"
-                            className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
-                            onClick={handleCancel}
-                          >
-                            キャンセル
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* アクティビティ側: 同じ高さ(h-64)でoverflow-y-auto */}
-                      <div className="flex-1 h-64 border border-gray-300 rounded bg-white overflow-y-auto p-2">
-                        <h3 className="font-bold text-lg mb-2">
-                          昨日のGitHubアクティビティ
-                        </h3>
-                        {nippouResult ? (
-                          <pre className="whitespace-pre-wrap">
-                            {nippouResult}
-                          </pre>
-                        ) : (
-                          <div>Loading</div>
-                        )}
+          {/* Discussion設定フォームトグル */}
+          <div className="p-4 border-b border-gray-200">
+            <button
+              type="button"
+              className="w-full bg-blue-500 text-white py-1 rounded hover:bg-blue-600"
+              onClick={() => setIsFormOpen(!isFormOpen)}
+            >
+              {isFormOpen ? "閉じる" : "Discussion設定を開く"}
+            </button>
+            {isFormOpen && (
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label
+                    htmlFor="owner"
+                    className="block text-sm font-medium text-gray-700 flex items-center"
+                  >
+                    リポジトリのオーナー
+                    <div className="relative group ml-2">
+                      <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                      <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                        GitHubリポジトリの所有者名を入力してください
                       </div>
                     </div>
-                  </div>
+                  </label>
+                  <input
+                    id="owner"
+                    className="mt-1 w-full border p-1"
+                    value={owner}
+                    onChange={(e) => {
+                      setOwner(e.target.value);
+                      saveToLocalStorage("owner", e.target.value);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="repo"
+                    className="block text-sm font-medium text-gray-700 flex items-center"
+                  >
+                    リポジトリ名
+                    <div className="relative group ml-2">
+                      <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                      <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                        GitHubリポジトリ名を入力してください
+                      </div>
+                    </div>
+                  </label>
+                  <input
+                    id="repo"
+                    className="mt-1 w-full border p-1"
+                    value={repo}
+                    onChange={(e) => {
+                      setRepo(e.target.value);
+                      saveToLocalStorage("repo", e.target.value);
+                    }}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="discussionNumber"
+                    className="block text-sm font-medium text-gray-700 flex items-center"
+                  >
+                    ディスカッション番号
+                    <div className="relative group ml-2">
+                      <span className="text-gray-400 cursor-pointer">ℹ️</span>
+                      <div className="absolute left-0 top-full mt-1 hidden w-64 p-2 bg-gray-700 text-white text-sm rounded shadow-lg group-hover:block z-50">
+                        DiscussionのURL末尾の数字
+                      </div>
+                    </div>
+                  </label>
+                  <input
+                    id="discussionNumber"
+                    className="mt-1 w-full border p-1"
+                    value={discussionNumber}
+                    onChange={(e) => {
+                      setDiscussionNumber(e.target.value);
+                      saveToLocalStorage("discussionNumber", e.target.value);
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  className="w-full bg-green-500 text-white py-1 rounded hover:bg-green-600"
+                  onClick={handleLoadDiscussion}
+                >
+                  取得
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Discussion Title + 新規作成ボタン、テンプレート設定ボタン */}
+          {discussionTitle && (
+            <div className="p-4 border-b border-gray-200">
+              <div className="text-lg font-bold text-gray-800 mb-2">
+                {discussionTitle}
+              </div>
+              <button
+                type="button"
+                onClick={handleCreateNewComment}
+                className="w-full mb-2 bg-purple-500 text-white py-1 rounded hover:bg-purple-600"
+              >
+                今日の日報を作成
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenTemplateModal}
+                className="w-full bg-gray-500 text-white py-1 rounded hover:bg-gray-600"
+              >
+                テンプレート設定
+              </button>
+            </div>
+          )}
+
+          <JournalList
+            status={status}
+            comments={comments}
+            onSelectComment={(comment) => {
+              setSelectedComment(comment);
+              setEditingSectionIndex(null);
+              setEditBody("");
+              setNippouResult("");
+            }}
+          />
+        </div>
+
+        {/* Main Content: ここにスクロール適用 */}
+        <div className="flex-1 p-6 overflow-y-auto">
+          {selectedComment && sections.length > 0 && (
+            <div className="prose prose-sm max-w-none relative">
+              {sections[0].trim() && (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                  {sections[0]}
+                </ReactMarkdown>
+              )}
+
+              {sections.slice(1).map((sec, i) => {
+                const sectionIndex = i + 1;
+                const lines = sec.split("\n");
+                const headingLine = lines[0].replace(/^##\s*/, "");
+
+                if (editingSectionIndex === sectionIndex) {
+                  return (
+                    <div key={sectionIndex}>
+                      <h2 className="relative group flex items-center">
+                        {headingLine}
+                      </h2>
+
+                      {/* 編集画面全体をflexで横並びにする */}
+                      <div className="flex gap-4 items-stretch">
+                        {/* テキストエリア側 */}
+                        <div className="flex-1 flex flex-col">
+                          {/* テキストエリア部分を固定高さで確保 */}
+                          <div className="h-64 flex flex-col">
+                            <textarea
+                              className="w-full h-full border border-gray-300 p-2 resize-none"
+                              value={editBody}
+                              onChange={(e) => setEditBody(e.target.value)}
+                            />
+                          </div>
+                          {/* ボタン部分はテキストエリアの下に配置 */}
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+                              onClick={handleSave}
+                            >
+                              保存
+                            </button>
+                            <button
+                              type="button"
+                              className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
+                              onClick={handleCancel}
+                            >
+                              キャンセル
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* アクティビティ側: 同じ高さ(h-64)でoverflow-y-auto */}
+                        <div className="flex-1 h-64 border border-gray-300 rounded bg-white overflow-y-auto p-2">
+                          <h3 className="font-bold text-lg mb-2">
+                            昨日のGitHubアクティビティ
+                          </h3>
+                          {nippouResult ? (
+                            <pre className="whitespace-pre-wrap">
+                              {nippouResult}
+                            </pre>
+                          ) : (
+                            <div>Loading</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <JournalDetail
+                    key={sectionIndex}
+                    sec={sec}
+                    sectionIndex={sectionIndex}
+                    onEdit={handleEditSection}
+                  />
                 );
-              }
-              return (
-                <JournalDetail
-                  key={sectionIndex}
-                  sec={sec}
-                  sectionIndex={sectionIndex}
-                  onEdit={handleEditSection}
-                />
-              );
-            })}
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* テンプレート設定モーダル */}
+        {isTemplateModalOpen && (
+          <div className="fixed inset-0 flex items-center justify-center z-50">
+            <div
+              className="fixed inset-0 bg-black opacity-50"
+              onClick={handleCloseTemplateModal}
+              onKeyDown={handleCloseTemplateModal}
+              role="button"
+              tabIndex={0}
+            />
+            <div className="bg-white rounded p-4 z-10 w-1/2">
+              <h2 className="text-xl font-bold mb-2">テンプレート設定</h2>
+              <textarea
+                className="w-full h-64 border border-gray-300 p-2"
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+              />
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
+                  onClick={handleSaveTemplate}
+                >
+                  保存
+                </button>
+                <button
+                  type="button"
+                  className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
+                  onClick={handleCloseTemplateModal}
+                >
+                  キャンセル
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
 
-      {/* テンプレート設定モーダル */}
-      {isTemplateModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div
-            className="fixed inset-0 bg-black opacity-50"
-            onClick={handleCloseTemplateModal}
-            onKeyDown={handleCloseTemplateModal}
-            role="button"
-            tabIndex={0}
-          />
-          <div className="bg-white rounded p-4 z-10 w-1/2">
-            <h2 className="text-xl font-bold mb-2">テンプレート設定</h2>
-            <textarea
-              className="w-full h-64 border border-gray-300 p-2"
-              value={template}
-              onChange={(e) => setTemplate(e.target.value)}
-            />
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-                onClick={handleSaveTemplate}
-              >
-                保存
-              </button>
-              <button
-                type="button"
-                className="bg-gray-300 text-black px-4 py-1 rounded hover:bg-gray-400"
-                onClick={handleCloseTemplateModal}
-              >
-                キャンセル
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* フッター */}
+      <footer className="border-t border-gray-300 bg-gray-100 py-4 px-4 text-sm text-gray-700">
+        <h3 className="font-bold mb-2">このツールの使い方</h3>
+        <p className="mb-2">
+          github-nippouは、GitHub上のissueやpull
+          requestなどのアクティビティを日ごとにまとめて表示してくれるCLIツールです。
+        </p>
+        <p className="mb-2">
+          このサイトは、@masutaka さんが作成された
+          <a
+            href="https://github.com/masutaka/github-nippou"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-600"
+          >
+            github-nippou
+          </a>
+          （CLIツール）および、@MH4GF さんが作成された
+          <a
+            href="https://github.com/MH4GF/github-nippou-web"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-blue-600"
+          >
+            github-nippou-web
+          </a>
+          の実装・コードを参考にし、改変・活用しています。
+        </p>
+      </footer>
     </div>
   );
 }
