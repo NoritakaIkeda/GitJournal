@@ -257,7 +257,7 @@ export default function Page() {
     <div className="min-h-screen flex flex-row bg-gray-100">
       {/* Sidebar */}
       <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div className="p-4 text-xl font-bold text-center bg-gray-200">
+        <div className="p-4 text-xl font-bold text-center bg-gray-200 text-gray-900">
           Git Journal
         </div>
         <div className="p-4 flex items-center space-x-2 border-b border-gray-200">
